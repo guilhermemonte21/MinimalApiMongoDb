@@ -8,23 +8,22 @@ namespace MinimalAPIMongo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Produces("application/json")]
-    public class ProductController : ControllerBase
+    public class ClientController : ControllerBase
     {
-        private readonly IMongoCollection<Product> _product;
+        private readonly IMongoCollection<Client> _client;
 
-        public ProductController(MongoDbService mongoDbService)
+        public ClientController(MongoDbService mongoDbService)
         {
-            _product = mongoDbService.GetDatabase.GetCollection<Product>("product");
+            _client = mongoDbService.GetDatabase.GetCollection<Client>("Client");
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> Get()
+        public async Task<ActionResult<List<Client>>> Get()
         {
             try
             {
-                var products = await _product.Find(FilterDefinition<Product>.Empty).ToListAsync();
-                return Ok(products);
+                var clients = await _client.Find(FilterDefinition<Client>.Empty).ToListAsync();
+                return Ok(clients);
 
             }
             catch (Exception e)
@@ -35,12 +34,12 @@ namespace MinimalAPIMongo.Controllers
         }
         [HttpPost]
 
-        public async Task<ActionResult> Post(Product newProduct)
+        public async Task<ActionResult> Post(Client client)
         {
             try
             {
-                await _product.InsertOneAsync(newProduct);
-                return Ok(newProduct);
+                await _client.InsertOneAsync(client);
+                return Ok(client);
             }
             catch (Exception e)
             {
@@ -53,8 +52,8 @@ namespace MinimalAPIMongo.Controllers
         {
             try
             {
-                var product = await _product.Find(x => x.Id == id).FirstOrDefaultAsync();
-                return product is not null ? Ok(product) : NotFound();
+                var cliente = await _client.Find(x => x.Id == id).FirstOrDefaultAsync();
+                return cliente is not null ? Ok(cliente) : NotFound();
             }
             catch (Exception e)
             {
@@ -62,17 +61,17 @@ namespace MinimalAPIMongo.Controllers
             }
         }
         [HttpPut]
-        public async Task<ActionResult> Put(Product newProduct, string id)
+        public async Task<ActionResult> Put(Client client, string id)
         {
             try
             {
                 //buscar por id (filtro)
-                var filter = Builders<Product>.Filter.Eq(x => x.Id, newProduct.Id);
+                var filter = Builders<Client>.Filter.Eq(x => x.Id, client.Id);
 
                 if (filter != null)
                 {
                     //substituindo o objeto buscado pelo novo objeto
-                    await _product.ReplaceOneAsync(filter, newProduct);
+                    await _client.ReplaceOneAsync(filter, client);
                     return Ok();
                 }
                 return NotFound();
@@ -85,12 +84,12 @@ namespace MinimalAPIMongo.Controllers
         }
 
 
-       [HttpDelete]
+        [HttpDelete]
         public async Task<ActionResult> Delete(string id)
         {
             try
             {
-                await _product.DeleteOneAsync(FindById(id));
+                await _client.DeleteOneAsync(FindById(id));
                 return Ok();
             }
             catch (Exception e)
@@ -98,14 +97,14 @@ namespace MinimalAPIMongo.Controllers
 
                 return BadRequest(e.Message);
             }
-            
+
         }
 
         [HttpGet("FindById")]
-        public FilterDefinition<Product> FindById(string id)
+        public FilterDefinition<Client> FindById(string id)
         {
 
-            return Builders<Product>.Filter.Eq(m => m.Id, id);
+            return Builders<Client>.Filter.Eq(m => m.Id, id);
         }
 
     }

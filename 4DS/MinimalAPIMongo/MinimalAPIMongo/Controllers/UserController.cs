@@ -9,88 +9,21 @@ namespace MinimalAPIMongo.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Produces("application/json")]
-    public class ProductController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly IMongoCollection<Product> _product;
+        private readonly IMongoCollection<Users> _user;
 
-        public ProductController(MongoDbService mongoDbService)
+        public UserController(MongoDbService mongoDbService)
         {
-            _product = mongoDbService.GetDatabase.GetCollection<Product>("product");
+            _user = mongoDbService.GetDatabase.GetCollection<Users>("Users");
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Product>>> Get()
-        {
-            try
-            {
-                var products = await _product.Find(FilterDefinition<Product>.Empty).ToListAsync();
-                return Ok(products);
-
-            }
-            catch (Exception e)
-            {
-
-                return BadRequest(e.Message);
-            }
-        }
         [HttpPost]
-
-        public async Task<ActionResult> Post(Product newProduct)
+        public async Task<ActionResult> Post(Users user)
         {
             try
             {
-                await _product.InsertOneAsync(newProduct);
-                return Ok(newProduct);
-            }
-            catch (Exception e)
-            {
-
-                return BadRequest(e.Message);
-            }
-        }
-        [HttpGet("{id}")]
-        public async Task<ActionResult> GetById(string id)
-        {
-            try
-            {
-                var product = await _product.Find(x => x.Id == id).FirstOrDefaultAsync();
-                return product is not null ? Ok(product) : NotFound();
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-        [HttpPut]
-        public async Task<ActionResult> Put(Product newProduct, string id)
-        {
-            try
-            {
-                //buscar por id (filtro)
-                var filter = Builders<Product>.Filter.Eq(x => x.Id, newProduct.Id);
-
-                if (filter != null)
-                {
-                    //substituindo o objeto buscado pelo novo objeto
-                    await _product.ReplaceOneAsync(filter, newProduct);
-                    return Ok();
-                }
-                return NotFound();
-            }
-            catch (Exception e)
-            {
-
-                return BadRequest(e.Message);
-            }
-        }
-
-
-       [HttpDelete]
-        public async Task<ActionResult> Delete(string id)
-        {
-            try
-            {
-                await _product.DeleteOneAsync(FindById(id));
+                await _user.InsertOneAsync(user);
                 return Ok();
             }
             catch (Exception e)
@@ -101,11 +34,61 @@ namespace MinimalAPIMongo.Controllers
             
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById(string id)
+        {
+            try
+            {
+                var user = await _user.Find(x => x.Id == id).FirstOrDefaultAsync();
+                return user is not null ? Ok(user) : NotFound();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        [HttpPut]
+        public async Task<ActionResult> Put(Users user, string id)
+        {
+            try
+            {
+                //buscar por id (filtro)
+                var filter = Builders<Users>.Filter.Eq(x => x.Id, user.Id);
+
+                if (filter != null)
+                {
+                    //substituindo o objeto buscado pelo novo objeto
+                    await _user.ReplaceOneAsync(filter, user);
+                    return Ok();
+                }
+                return NotFound();
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+        }
+        [HttpDelete]
+        public async Task<ActionResult> Delete(string id)
+        {
+            try
+            {
+                await _user.DeleteOneAsync(FindById(id));
+                return Ok();
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
         [HttpGet("FindById")]
-        public FilterDefinition<Product> FindById(string id)
+        public FilterDefinition<Users> FindById(string id)
         {
 
-            return Builders<Product>.Filter.Eq(m => m.Id, id);
+            return Builders<Users>.Filter.Eq(m => m.Id, id);
         }
 
     }
