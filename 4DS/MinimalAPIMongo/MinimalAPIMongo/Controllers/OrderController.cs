@@ -28,11 +28,25 @@ namespace MinimalAPIMongo.Controllers
         {
             try
             {
-                var products = await _order.Find(FilterDefinition<Order>.Empty).ToListAsync();
-               
+                var orders = await _order.Find(FilterDefinition<Order>.Empty).ToListAsync();
 
+                foreach (var order in orders)
+                {
+                    if (order.ProductIds != null)
+                    {
+                        var filter = Builders<Product>.Filter.In(p => p.Id, order.ProductIds);
 
-                return Ok(products);
+                        order.Products = await _product.Find(filter).ToListAsync();
+                    }
+
+                    if (order.ClientId != null)
+                    {
+                        order.Client = await _client.Find(x => x.Id == order.ClientId).FirstOrDefaultAsync();
+                    }
+                }
+                0+
+
+                return Ok(orders);
 
             }
             catch (Exception e)
@@ -61,21 +75,23 @@ namespace MinimalAPIMongo.Controllers
                 {
                     return NotFound("Cliente não Encontrado");
                 }
-                List<Product> products = new List<Product>();
-                var produtosBuscados = order.ProductIds;
-                var productList = await _product.Find(FilterDefinition<Product>.Empty).ToListAsync();
-                foreach (string Id in produtosBuscados) 
-                {
-                    foreach(Product p in productList)
-                    {
-                        if(Id == p.Id)
-                        {
-                            products.Add(p);
-                        }
-                    }
-                }
-                order.Products = products;
-                order.Client = client;
+
+                //Tambem esta correto, porem optei por fazer no metodo GET
+                //List<Product> products = new List<Product>();
+                //var produtosBuscados = order.ProductIds;
+                //var productList = await _product.Find(FilterDefinition<Product>.Empty).ToListAsync();
+                //foreach (string Id in produtosBuscados) 
+                //{
+                //    foreach(Product p in productList)
+                //    {
+                //        if(Id == p.Id)
+                //        {
+                //            products.Add(p);
+                //        }
+                //    }
+                //}
+                //order.Products = products;
+                //order.Client = client;
 
                 await _order!.InsertOneAsync(order);
                 return StatusCode(201, order);
